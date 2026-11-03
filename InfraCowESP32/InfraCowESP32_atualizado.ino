@@ -1,24 +1,9 @@
-// InfraCow - ESP32 + MLX90614 (versão simples)
-//
-// Como funciona:
-//   1. O app manda o texto "MEDIR" pelo cabo USB.
-//   2. O ESP32 lê o sensor durante TEMPO_MEDICAO_MS (3 s) e tira a média.
-//   3. Responde UMA linha JSON, no formato que o app já entende:
-//      {"leituras":[{"objeto_C":36.52,"ambiente_C":27.10}]}
-//
-// Ligação do sensor (ESP32 DevKit):
-//   VIN -> 3V3      GND -> GND      SDA -> GPIO 21      SCL -> GPIO 22
-//
-// Biblioteca necessária: "Adafruit MLX90614 Library" (Gerenciador de Bibliotecas).
-//
-// Teste sem o app: abra o Monitor Serial em 115200, "Nova linha" (Newline),
-// digite MEDIR e envie.
 
 #include <Wire.h>
 #include <Adafruit_MLX90614.h>
 
-#define TEMPO_MEDICAO_MS 3000   // quanto tempo medindo antes de dar o valor final (3000 = 3 s, 5000 = 5 s)
-#define INTERVALO_MS      250   // intervalo entre leituras dentro desse tempo
+#define TEMPO_MEDICAO_MS 3000   
+#define INTERVALO_MS      250 
 
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 bool sensorOk = false;
@@ -30,8 +15,6 @@ void setup() {
 }
 
 void medir() {
-  // Se o sensor não foi achado na inicialização (solda ruim, fio solto...),
-  // tenta de novo agora, sem precisar reiniciar a placa.
   if (!sensorOk) sensorOk = mlx.begin();
   if (!sensorOk) {
     Serial.println("ERRO: sensor indisponivel");
@@ -74,8 +57,6 @@ void loop() {
 
     if (cmd == "MEDIR") {
       medir();
-      // Descarta comandos que chegaram durante a medição (o app reenvia
-      // "MEDIR" se demorar), para não disparar uma medição fantasma.
       while (Serial.available() > 0) Serial.read();
     }
   }
